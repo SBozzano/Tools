@@ -1,27 +1,32 @@
 import tkinter as tk
 from abc import abstractmethod
 from tkinter import ttk
+
+import classes
 from classes import Costants
 import time
 from threading import Timer
 import CAN_LogPlot
 import threading
-from manage_CAN import manage_can
+# from manage_CAN import manage_can
+from can_management import CanInterface
 from can.interfaces.ixxat import get_ixxat_hwids
 import serial.tools.list_ports
 from can_ixxat import CanIxxat
+from classes import Parameter
 
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.can = None
+
         self.debug = False
         self.stop_timer = False
         self.can_is_connected = False
 
         self.title('Battery CAN')
-        #self.com_manage()
+        # self.com_manage()
+
 
         self.fault_text = tk.StringVar()
         self.output_text = tk.StringVar()
@@ -42,15 +47,34 @@ class App(tk.Tk):
         self.label_soc = tk.Label(self, text="", width=5, height=1)
         self.label_voltage = tk.Label(self, text="", width=5, height=1)
         self.label_current = tk.Label(self, text="", width=5, height=1)
+
+        self.all_batt = ttk.Button(self, text="see all batt", command=self.enable, style='white.TButton')
+
         self.label_fault_text = tk.Label(self, textvariable=self.fault_text)
         self.label_output = tk.Label(self, textvariable=self.output_text)
 
-        self.protocol("WM_DELETE_WINDOW", None) #self.disable_event
+        self.width = 0#self.winfo_width()
+        self.height = 0#self.winfo_height()
+
+       # self.geometry("%dx%d" % (self.width, self.height))
+        self.resizable(False, False)
+
+        self.protocol("WM_DELETE_WINDOW", None)  # self.disable_event
         self.create_widgets()
-        self.can_connect()
+        self.can_interface = CanInterface(interface='ixxat', channel=0, bitrate=500000)
+
+        self.can_interface.start_sending(arbitration_id=0x601, data=[0x40, 0x41, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00])
+        self.start()
+        #"Overcurrent", "OverTemperature", "OverVoltage", "UnderVoltage","Timeout can BMS", "Offset calibration failed", "Reference fuori specifica"
+
+        Parameter()
+
+        # self.write_messages()
+
+    def start(self):
+        self.can_interface.start_sending(arbitration_id=classes.m0x1002.arbitration_id, data=classes.m0x1002.data)
 
 
-      #  self.can_connect()
 
     def disable_event(self):
         pass
@@ -87,8 +111,15 @@ class App(tk.Tk):
         tk.Label(self, text="I Batt:").grid(column=2, row=2, padx=10, pady=10)
         self.label_current.grid(column=3, row=2, padx=10, pady=10)
         self.label_fault_text.grid(column=0, row=3, padx=10, pady=10)
-        tk.Button(self, text="X", bg='red', command=self.close_all, width=5, height=1).grid(column=4, row=0, padx=10,
-                                                                                            pady=10)
+        ttk.Button(self, text="-", width=1, command=self.expand).grid(row=4, column=4, sticky='se', padx=10, pady=10)
+
+    def expand(self):
+      #  self,add_all_widget()
+        for
+        ttk.Button(self, text="-", width=1, command=self.expand).grid(row=100, column=4, sticky='se', padx=10, pady=10)
+        self.update_idletasks()
+        self.minsize(self.winfo_width(), self.winfo_height())
+       # self.resizable(False, False)
 
     def enable(self):
         if self.button_enable['style'] == 'white.TButton':
@@ -111,20 +142,25 @@ class App(tk.Tk):
             print("Found IXXAT with hardware id '%s'." % hwid)
 
     def write_messages(self):
-       # print("write1")
+        # print("write1")
         if not self.stop_timer:
             try:
-                self.read_1003()
-                self.read_1005()
-               # print("write0")
-                self.timer(0.5, self.write_messages)
+                print("send")
+                self.can_interface.send_message(arbitration_id=0x601,
+                                                data=[0x40, 0x41, 0x60, 0x00, 0x00, 0x00, 0x00, 0x00])
+                # self.read_1003()
+                # self.read_1005()
+                # print("write0")
+                self.timer(1, self.write_messages)
             except:
+                pass
 
-                #print("can da connettere")
-                self.label_output.config(text="fault: close and open again")
-                self.stop_timer = True
-                #self.com_manage()
-                #self.can_connect()
+                # print("can da connettere")
+                # print("stoppp")
+                # self.label_output.config(text="fault: close and open again")
+            # self.stop_timer = True
+            # self.com_manage()
+            # self.can_connect()
 
     def read_1003(self):
         no_fault = [0, 0, 0, 0, 0, 0, 0, 0]
@@ -204,3 +240,7 @@ class App(tk.Tk):
         self.destroy()
 
 # stop timer
+
+# class allCell(tk.Tk):
+#     def start(self):
+#
