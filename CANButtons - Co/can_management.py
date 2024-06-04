@@ -2,7 +2,7 @@ import can
 import logging
 import time
 import threading
-import classes
+
 
 
 class CanInterface:
@@ -281,7 +281,6 @@ class CANReceiver(CanInterface):
             self.subscribers[message_id] = []
 
         self.subscribers[message_id].append(callback)
-        print(self.subscribers)
 
     def receive_messages(self):
         """Ricevi e gestisci i messaggi sulla rete CAN."""
@@ -293,13 +292,11 @@ class CANReceiver(CanInterface):
                 continue
 
             try:
-                message = self.bus.recv(1000)
+                message = self.bus.recv(1)
                 if message is None:
                     print("Nessun messaggio ricevuto entro il timeout")
                     continue
-
                 if message.arbitration_id in self.subscribers:
-                    print("fine: ",message.arbitration_id)
                     for callback in self.subscribers[message.arbitration_id]:
                         callback(message)
 
@@ -369,7 +366,7 @@ class CANSender(CanInterface):
                     is_extended_id = message.is_extended_id
                     msg = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=is_extended_id)
                     print(msg)
-                    time.sleep(0.5)
+                    time.sleep(0.3)
                     self.bus.send(msg)
                 time.sleep(interval)
             except can.CanError as e:

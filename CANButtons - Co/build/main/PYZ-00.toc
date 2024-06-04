@@ -1,8 +1,8 @@
 ('C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - '
- 'Copia\\build\\main\\PYZ-00.pyz',
+ 'Co\\build\\main\\PYZ-00.pyz',
  [('CAN_LogPlot',
    'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - '
-   'Copia\\CAN_LogPlot.py',
+   'Co\\CAN_LogPlot.py',
    'PYMODULE'),
   ('__future__',
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\__future__.py',
@@ -140,8 +140,7 @@
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\base64.py',
    'PYMODULE'),
   ('batteryCAN',
-   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - '
-   'Copia\\batteryCAN.py',
+   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - Co\\batteryCAN.py',
    'PYMODULE'),
   ('bdb',
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\bdb.py',
@@ -255,12 +254,11 @@
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\can\\util.py',
    'PYMODULE'),
   ('can_ixxat',
-   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - '
-   'Copia\\can_ixxat.py',
+   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - Co\\can_ixxat.py',
    'PYMODULE'),
   ('can_management',
    'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - '
-   'Copia\\can_management.py',
+   'Co\\can_management.py',
    'PYMODULE'),
   ('canopen',
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\canopen\\__init__.py',
@@ -344,7 +342,7 @@
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\site-packages\\canopen\\variable.py',
    'PYMODULE'),
   ('classes',
-   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - Copia\\classes.py',
+   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - Co\\classes.py',
    'PYMODULE'),
   ('cmd',
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\cmd.py',
@@ -617,8 +615,7 @@
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\lzma.py',
    'PYMODULE'),
   ('manage_CAN',
-   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - '
-   'Copia\\manage_CAN.py',
+   'C:\\Users\\stefano.bozzano\\Desktop\\Tools\\CANButtons - Co\\manage_CAN.py',
    'PYMODULE'),
   ('mimetypes',
    'C:\\Users\\stefano.bozzano\\AppData\\Local\\Programs\\Python\\Python311\\Lib\\mimetypes.py',

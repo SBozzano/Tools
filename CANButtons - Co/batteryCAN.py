@@ -95,8 +95,6 @@ class App(tk.Tk):
         if self.can_is_connected:
             #  if self.button_enable['style'] == 'white.TButton':
             #  if self.button_enable_charge['style'] == 'green.TButton':
-            self.sendnull()
-            time.sleep(0.5)
             self.sender.send_one_message(classes.m0x1008_DISCHARGE)
             #     self.button_enable_charge.config(state='disable')
             # self.button_enable_charge.config(style='red.TButton', text="Disable")
@@ -106,8 +104,6 @@ class App(tk.Tk):
         if self.can_is_connected:
             #  if self.button_enable['style'] == 'white.TButton':
           #  if self.button_enable_charge['style'] == 'green.TButton':
-            self.sendnull()
-            time.sleep(0.5)
 
             self.sender.send_one_message(classes.m0x1008_CHARGE)
        #     self.button_enable_charge.config(state='disable')
@@ -161,7 +157,7 @@ class App(tk.Tk):
 
         self.label_fault.grid(column=0, row=2, columnspan=2, padx=10, pady=10)
         self.button_start_can.grid(row=4, column=5, sticky='se', padx=10, pady=10)
-     #   self.button_expand.grid(row=4, column=4, sticky='se', padx=10, pady=10)
+        self.button_expand.grid(row=4, column=4, sticky='se', padx=10, pady=10)
 
     #        if self.can_interface.ensure_connection:
     #       self.set_grind()
@@ -190,7 +186,7 @@ class App(tk.Tk):
                         row = self.row_little
 
         self.button_start_can.grid(row=max_row, column=column+2, sticky='se', padx=10, pady=10)
-     #   self.button_expand.grid(row=max_row, column=column + 1, sticky='se', padx=10, pady=10)
+        self.button_expand.grid(row=max_row, column=column + 1, sticky='se', padx=10, pady=10)
 
         self.row_little = max_row + 1
         self.column_little = column
@@ -220,7 +216,9 @@ class App(tk.Tk):
 
 
     def recive_main(self, message_rec) -> None:
-        print("id: ")
+
+
+
         if message_rec is None:
             print("errore nella ricezione del messaggio")
         else:
@@ -237,10 +235,7 @@ class App(tk.Tk):
                         if not (name in classes.rx_message_main_exception):
 
                             self.label_messages_main[self.parameter_counter_main].config(text=datas[i])
-                            print("aaaa: ", self.parameter_counter_main, name)
                             self.parameter_counter_main += 1
-
-
 
         if self.parameter_counter_main >= (len(self.label_messages_main)):
             self.parameter_counter_main = 0
@@ -277,15 +272,11 @@ class App(tk.Tk):
                 if bool(bits[6]):
 
                     self.button_enable_charge.config(state='disable')
-                 #   time.sleep(2)
-
                     self.button_enable_discharge.config(state='enable')
                 elif bool(bits[7]):
 
                     self.button_enable_discharge.config(state='disable')
-                 #   time.sleep(2)
-                 #    self.sendnull()
-                 #    time.sleep(0.2)
+
                     self.button_enable_charge.config(state='enable')
                 else:
                     self.button_enable_charge.config(style="white.TButton")
@@ -323,8 +314,6 @@ class App(tk.Tk):
 
 
         # self.upgrade_root()
-    def sendnull(self):
-        self.sender.send_one_message(classes.m0x1008_NULL)
 
     def expand(self):
         column = 0
@@ -347,7 +336,7 @@ class App(tk.Tk):
             self.button_expand.config(text="+")
             self.button_start_can.grid(row=self.row_little, column=self.column_little +1, sticky='se', padx=10,
                                        pady=10)
-        #    self.button_expand.grid(row=self.row_little, column=self.column_little, sticky='se', padx=10, pady=10)
+            self.button_expand.grid(row=self.row_little, column=self.column_little, sticky='se', padx=10, pady=10)
         else:
             self.expanded = True
             for message in classes.rx_messages:
@@ -371,7 +360,7 @@ class App(tk.Tk):
 
             self.button_expand.config(text="-")
             self.button_start_can.grid(row=row_button, column=column_button +1, sticky='se', padx=10, pady=10)
-        #    self.button_expand.grid(row=row_button, column=column_button, sticky='se', padx=10, pady=10)
+            self.button_expand.grid(row=row_button, column=column_button, sticky='se', padx=10, pady=10)
 
         if self.receiver is not None and self.sender is not None:
             self.set_grind()
@@ -434,7 +423,7 @@ class App(tk.Tk):
         else:
             if self.sender.is_sending:
                 self.sender.stop_sending()
-            self.sender.start_sending(classes.tx_messages_main, interval=3)
+            self.sender.start_sending(classes.tx_messages_main, interval=1)
             self.receiver.rest_subscribers()
             self.set_subscribe(classes.rx_messages_main, self.recive_main)
             # self.set_subscribe()

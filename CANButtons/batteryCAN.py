@@ -1,25 +1,13 @@
 import tkinter as tk
-from abc import abstractmethod
 from tkinter import ttk
-import sys
-
-import can_management
 import classes
-
-import time
-from threading import Timer
-import CAN_LogPlot
 import threading
-# from manage_CAN import manage_can
 from can_management import CanInterface
 from can_management import CANReceiver
 from can_management import CANSender
 from can.interfaces.ixxat import get_ixxat_hwids
-import serial.tools.list_ports
-from can_ixxat import CanIxxat
-from classes import Parameter
 import struct
-import subprocess
+import time
 
 
 class App(tk.Tk):
@@ -29,21 +17,22 @@ class App(tk.Tk):
         self.sender = None
         self.receiver = None
         self.can_interface = None
-        self.debug = False
-        self.stop_timer = False
         self.can_is_connected = False
-
         self.row_min_size = 20
         self.column_min_size = 130
+        self.row_little = 0
+        self.column_little = 0
+        self.expanded = False
+        self.label_names = []
+        self.label_messages = []
+        self.label_names_main = []
+        self.label_messages_main = []
 
-        self.width_little = 0
-        self.height_little = 0
-        self.width_big = 0
-        self.height_big = 0
+        self.parameter_counter_exp = 0
 
         self.title('Battery CAN')
         self.resizable(False, False)
-        self.protocol("WM_DELETE_WINDOW", self.on_closing)  # self.disable_event
+        self.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         self.fault_text = tk.StringVar()
         self.output_text = tk.StringVar()
@@ -59,51 +48,53 @@ class App(tk.Tk):
         self.label_sw2 = tk.Label(self, text="DISCHARGE", borderwidth=2, relief="groove", bg="white", width=12,
                                   height=1)
         self.label_fault = tk.Label(self, text="FAULT", borderwidth=2, relief="groove", bg="white", width=6, height=1)
-        # self.button_all_batt = ttk.Button(self, text="see all batt", command=self.enable, style='white.TButton')
+      #  self.button_all_batt = ttk.Button(self, text="see all batt", command=self.enable, style='white.TButton')
         self.button_start_can = ttk.Button(self, text=">", width=1, command=self.ixxat_connect, )
         self.button_expand = ttk.Button(self, text="+", width=1, command=self.expand)
 
         self.label_fault_text = tk.Label(self, textvariable=self.fault_text)
         self.label_output = tk.Label(self, textvariable=self.output_text)
 
-        self.row_little = 0
-        self.column_little = 0
-        self.row_big = 0
-        self.column_big = 0
-        self.expanded = False
-
-        self.label_names = []
-        self.label_messages = []
-        self.label_names_main = []
-        self.label_messages_main = []
-        self.parameter_counter_main = 0
-        self.parameter_counter_exp = 0
-
         self.create_custom_widgets()
         self.create_default_widgets()
         self.create_main_widgets()
 
+    def create_custom_widgets(self) -> None:
+        self.button_enable_charge.grid(column=0, row=0, padx=10, pady=10)
+        self.button_enable_discharge.grid(column=1, row=0, padx=10, pady=10)
+
+        self.label_sw1.grid(column=0, row=1, padx=10, pady=10)
+        self.label_sw2.grid(column=1, row=1, padx=10, pady=10)
+
+
     def custom_enable_discharge(self):
-        if self.can_is_connected:
-            self.sendnull()
-            time.sleep(0.5)
-            self.sender.send_one_message(classes.m0x1008_DISCHARGE)
-            self.output_text.set("")
-
-    def custom_enable_charge(self):
-        if self.can_is_connected:
-            self.sendnull()
-            time.sleep(0.5)
+        if self.button_enable_discharge['text'] == 'ENABLE CHARGE':
             self.sender.send_one_message(classes.m0x1008_CHARGE)
+            # self.button_enable_charge.config(state='disable')
+            # self.button_enable_discharge.config( text='DISABLE DISCHARGE')
+        elif self.button_enable_discharge['text'] == 'DISABLE DISCHARGE':
+            self.sender.send_one_message(classes.m0x1008_NULL)
+            # self.button_enable_charge.config(state='enable')
+            # self.button_enable_discharge.config(text='ENABLE DISCHARGE')
+    def custom_enable_charge(self):
+        if self.button_enable_charge['text'] == 'ENABLE CHARGE':
+            self.sender.send_one_message(classes.m0x1008_CHARGE)
+            # self.button_enable_discharge.config(state='disable')
+            # self.button_enable_charge.config( text='DISABLE CHARGE')
+        elif self.button_enable_charge['text'] == 'DISABLE CHARGE':
+            self.sender.send_one_message(classes.m0x1008_NULL)
+            # self.button_enable_discharge.config(state='enable')
+            # self.button_enable_charge.config(text='ENABLE CHARGE')
 
-            self.output_text.set("")
+        # if self.can_is_connected:
+        #     self.sendnull()
+        #     time.sleep(0.5)
+
+       # self.output_text.set("")
 
     def ixxat_connect(self):
-
         self.can_interface = CanInterface(interface='ixxat', channel=0, bitrate=500000)
         if self.can_interface.get_bus_status():
-
-            self.parameter_counter_main = 0
             self.parameter_counter_exp = 0
             self.receiver = CANReceiver()
 
@@ -118,17 +109,11 @@ class App(tk.Tk):
             self.can_interface.ensure_connection()
             self.can_is_connected = False
 
-    def create_custom_widgets(self) -> None:
-        self.button_enable_charge.grid(column=0, row=0, padx=10, pady=10)
-        self.button_enable_discharge.grid(column=1, row=0, padx=10, pady=10)
-
-        self.label_sw1.grid(column=0, row=1, padx=10, pady=10)
-        self.label_sw2.grid(column=1, row=1, padx=10, pady=10)
-
     def create_default_widgets(self):
 
         self.label_fault.grid(column=0, row=2, columnspan=2, padx=10, pady=10)
         self.button_start_can.grid(row=4, column=5, sticky='se', padx=10, pady=10)
+        self.button_expand.grid(row=4, column=6, sticky='se', padx=10, pady=10)
 
     def create_main_widgets(self):
         column = 2
@@ -171,14 +156,17 @@ class App(tk.Tk):
                 if message.arbitration_id == message_rec.arbitration_id:
                     message.data = message_rec.data
                     datas = struct.unpack(message.format, message.data)
-                    for data in datas:
-                        #     *args
+                    for i, name in enumerate(message.name, start=0):
+                        if not (name in classes.rx_message_exception):
+                            for k, label_name in enumerate(self.label_names, start=0):
+                                #  print ("label_name['text'][:1]: ", label_name['text'][:-1])
+                                #  print ( "name: ", name)
+                                if label_name['text'][:-1] == name:
+                                    self.label_messages[k].config(text=datas[i])
 
-                        self.label_messages[self.parameter_counter_exp].config(text=data)
-                        self.parameter_counter_exp += 1
-
-        if self.parameter_counter_exp >= (len(self.label_messages) - 1):
-            self.parameter_counter_exp = 0
+        #
+        # if self.parameter_counter_exp >= (len(self.label_messages) - 1):
+        #     self.parameter_counter_exp = 0
 
     def recive_main(self, message_rec) -> None:
 
@@ -192,21 +180,11 @@ class App(tk.Tk):
                     datas = struct.unpack(message.format, message.data)
                     for i, name in enumerate(message.name, start=0):
                         if not (name in classes.rx_message_main_exception):
-                            for k,label_name in enumerate(self.label_names_main, start=0):
-                              #  print ("label_name['text'][:1]: ", label_name['text'][:-1])
-                              #  print ( "name: ", name)
+                            for k, label_name in enumerate(self.label_names_main, start=0):
+                                #  print ("label_name['text'][:1]: ", label_name['text'][:-1])
+                                #  print ( "name: ", name)
                                 if label_name['text'][:-1] == name:
-                                    print("name: ", name)
-                                    self.label_messages_main[k].config(text= datas[i])
-
-
-                          #  self.label_messages_main[self.parameter_counter_main].config(text=datas[i])
-                        #    self.parameter_counter_main += 1
-
-
-
-        if self.parameter_counter_main >= (len(self.label_messages_main)):
-            self.parameter_counter_main = 0
+                                    self.label_messages_main[k].config(text=datas[i])
 
         for message in classes.rx_messages:
 
@@ -217,27 +195,37 @@ class App(tk.Tk):
                 no_fault = [0, 0, 0, 0, 0, 0, 0, 0]
                 fault = ''
                 bits = [int(bit) for bit in bin(output)[2:]]
-                while len(bits) != 8: bits.insert(0, 0)
+                while len(bits) != 8:
+                    bits.insert(0, 0)
 
                 if bool(bits[6]):
                     self.label_sw1.config(bg="red")
+                    self.button_enable_discharge.config(state='disable', text='ENABLE DISCHARGE')
+                    self.button_enable_charge.config(text='DISABLE CHARGE')
                 else:
                     self.label_sw1.config(bg="white")
 
                 if bool(bits[7]):
                     self.label_sw2.config(bg="red")
+                    self.button_enable_charge.config(state='disable',text='ENABLE CHARGE')
+                    self.button_enable_discharge.config(text='DISABLE DISCHARGE')
                 else:
                     self.label_sw2.config(bg="white")
 
-                if bool(bits[6]):
-                    self.button_enable_charge.config(state='disable')
-                    self.button_enable_discharge.config(state='enable')
+                if bool(bits[6]) and bool(bits[7]):
+                    self.button_enable_charge.config(state='enable', text='ENABLE CHARGE')
+                    self.button_enable_discharge.config(state='enable', text='ENABLE DISCHARGE')
 
-                elif bool(bits[7]):
-                    self.button_enable_discharge.config(state='disable')
-                    self.button_enable_charge.config(state='enable')
-                else:
-                    self.button_enable_charge.config(style="white.TButton")
+
+                # if bool(bits[6]):
+                #     self.button_enable_charge.config(state='disable')
+                #     self.button_enable_discharge.config(state='enable')
+                #
+                # elif bool(bits[7]):
+                #     self.button_enable_discharge.config(state='disable')
+                #     self.button_enable_charge.config(state='enable')
+                # else:
+                #     self.button_enable_charge.config(style="white.TButton")
 
                 if bool(bits[0]):
                     fault += " Overcurrent "
@@ -290,6 +278,8 @@ class App(tk.Tk):
 
             self.expanded = False
             self.button_expand.config(text="+")
+            self.button_expand.grid(row=self.row_little, column=self.column_little, sticky='se', padx=10,
+                                       pady=10)
             self.button_start_can.grid(row=self.row_little, column=self.column_little + 1, sticky='se', padx=10,
                                        pady=10)
         else:
@@ -315,6 +305,7 @@ class App(tk.Tk):
 
             self.button_expand.config(text="-")
             self.button_start_can.grid(row=row_button, column=column_button + 1, sticky='se', padx=10, pady=10)
+            self.button_expand.grid(row=row_button, column=column_button, sticky='se', padx=10, pady=10)
         if self.receiver is not None and self.sender is not None:
             self.set_grind()
 

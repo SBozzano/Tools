@@ -46,11 +46,6 @@ m0x1008_DISCHARGE = Parameter(name=[],
                     data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00],
                     format="",
                     is_extended_id=True)
-m0x1008_NULL = Parameter(name=[],
-                    arbitration_id=0x1008,
-                    data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
-                    format="",
-                    is_extended_id=True)
 
 t0 = Parameter(name=[],
                arbitration_id=0x601,
@@ -72,6 +67,6 @@ t2 = Parameter(name=["oila", "prova"],
 rx_messages = [m0x1003, m0x1005] #[t2]  # [m0x1003, m0x1005]
 tx_messages =  [m0x1002, m0x1004] #[t0, t1]  #
 
-rx_messages_main =[ m0x1003, m0x1005]
+rx_messages_main =[m0x1003, m0x1005]
 tx_messages_main = [m0x1002, m0x1004]
 rx_message_main_exception = ["output", "fault", "time_to_full_charge", "warnings"]#["output", "fault", "min_temp", "max_temp", "time_to_full_charge", "warnings"]
