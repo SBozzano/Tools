@@ -2,6 +2,9 @@ import can
 import logging
 import time
 import threading
+import queue
+
+import classes
 
 
 class CanInterface:
@@ -60,8 +63,6 @@ class CanInterface:
         return True
 
     def shutdown_(self):
-
-        # self.stop_event.set()
         if self.bus is not None:
             try:
                 self.bus.shutdown()
@@ -73,135 +74,167 @@ class CanInterface:
 
 class CANReceiver(CanInterface):
     def __init__(self):
-
         super().__init__()
         self.receive_thread = None
-        self.subscribers = {}                               # Dizionario degli ID di arbitraggio con i relativi callback
+        self.subscribers = {}  # Dizionario degli ID di arbitraggio con i relativi callback
         self.stop_receiving_event = threading.Event()
+        self.message_queue = queue.Queue()
+        self.processing_thread = threading.Thread(target=self.process_messages)
+        self.processing_thread.daemon = True
+        self.processing_thread.start()
+        self.is_receiving = False
 
-    def subscribe(self, message_id, callback):
+    def subscribe(self, message_id: classes.Parameter, callback):
         """Sottoscrivi un messaggio con l'ID specificato e associa una callback per la gestione del messaggio."""
         if message_id not in self.subscribers:
             self.subscribers[message_id] = []
         self.subscribers[message_id].append(callback)
 
+    def subscribe_list(self, message_list: list, callback):
+        """Overwrite: Sottoscrivi tutti i messaggi con l'ID specificato e associa una callback per la gestione del
+        messaggio."""
+        for message in message_list:
+            self.subscribe(message_id=message.arbitration_id, callback=callback)
 
     def receive_messages(self):
         """Ricevi e gestisci i messaggi sulla rete CAN."""
-
         while not self.stop_receiving_event.is_set():
-
             if not self.ensure_connection():
                 time.sleep(1)  # Aspetta un po' prima di riprovare a connettersi
                 continue
 
             try:
-                message = self.bus.recv(1)
+                message = self.bus.recv(1)  # TO CHANGE
                 if message is None:
                     print("Nessun messaggio ricevuto entro il timeout")
                     continue
 
-                if message.arbitration_id in self.subscribers:
-                    for callback in self.subscribers[message.arbitration_id]:
-                        callback(message)
-
+                self.message_queue.put(message)
             except can.CanError as e:
                 print(f"Errore durante la ricezione del messaggio: {e}")
                 time.sleep(1)  # Aspetta un po' prima di riprovare a ricevere
 
+    def process_messages(self):
+        """Elabora i messaggi dalla coda e chiama le callback appropriate."""
+        while True:
+            message = self.message_queue.get()
+            if message is None:
+                break
+
+            if message.arbitration_id in self.subscribers:
+                for callback in self.subscribers[message.arbitration_id]:
+                    callback(message)
+
+            self.message_queue.task_done()
+
     def start_receiving(self):
         """Avvia il thread per ricevere i messaggi."""
 
+        self.is_receiving = True
         self.stop_receiving_event.clear()
         self.receive_thread = threading.Thread(target=self.receive_messages)
         self.receive_thread.start()
 
     def stop_receiving(self):
         """Ferma il thread di ricezione."""
-
+        self.is_receiving = False
         self.stop_receiving_event.set()
         if self.receive_thread.is_alive():
             self.receive_thread.join(1)
+        self.message_queue.put(None)
 
-    def rest_subscribers(self):
+    def reset_subscribers(self):
         self.subscribers = {}
 
+    def status(self):
+        return self.is_receiving
 
 
 class CANSender(CanInterface):
     def __init__(self):
         super().__init__()
         self.send_thread = None
-        self.messages = None
-        self.interval = None
-        self.is_sending = False
+        self.message_queue = queue.Queue()
+        self.lock = threading.Lock()
         self.stop_sending_event = threading.Event()
-        self.test = False
-
-    def send_messages(self, messages, interval):
-        """Invia messaggi periodici sulla rete CAN."""
-        # print("sent")
-        self.messages = messages
-        self.interval = interval
-        while not self.stop_sending_event.is_set():
-            if not self.ensure_connection():
-                time.sleep(1)  # Aspetta un po' prima di riprovare a connettersi
-                continue
-
-            try:
-                for message in messages:
-                    arbitration_id = message.arbitration_id
-                    data = message.data
-                    is_extended_id = message.is_extended_id
-                    msg = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=is_extended_id)
-                    #print(msg)
-                    time.sleep(0.5)
-                    self.bus.send(msg)
-                time.sleep(interval)
-            except can.CanError as e:
-                print(f"Errore durante l'invio del messaggio: {e}")
-                time.sleep(1)  # Aspetta un po' prima di riprovare a inviare
-
-    def start_sending(self, messages=None, interval=None):
-        """Avvia il thread per inviare messaggi periodici."""
-
-        if self.is_sending:
-            print("Il thread di invio è già in esecuzione.")
-            return
-
-        if messages:
-            self.messages = messages
-
-        if interval:
-            self.interval = interval
-
-        if self.messages and self.interval:
-            self.is_sending = True
-            self.stop_sending_event.clear()
-            self.send_thread = threading.Thread(target=self.send_messages, args=(self.messages, self.interval))
-            self.send_thread.start()
-        else:
-            print("Messaggio e intervallo devono essere specificati prima di avviare l'invio.")
-
-    def stop_sending(self):
-        """Ferma il thread di invio."""
+        self.sending_thread = threading.Thread(target=self.process_queue)
+        self.sending_thread.daemon = True
+        self.sending_thread.start()
+        self.messages_to_send = []
         self.is_sending = False
-        self.stop_sending_event.set()
 
-        if self.send_thread.is_alive():
-            self.send_thread.join()
+    def process_queue(self):
+        while not self.stop_sending_event.is_set():
+            message = self.message_queue.get()
+            if message is None:
+                break
+            self.send_one_message(message)
+            self.message_queue.task_done()
 
     def send_one_message(self, message):
         try:
-            arbitration_id = message.arbitration_id
-            data = message.data
-            is_extended_id = message.is_extended_id
-            msg = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=is_extended_id)
-            # print(msg)
-            self.bus.send(msg)
+            with self.lock:
+                arbitration_id = message.arbitration_id
+                data = message.data
+                is_extended_id = message.is_extended_id
+                msg = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=is_extended_id)
+                self.bus.send(msg)
+                print(f"Messaggio inviato: {msg}")
 
         except can.CanError as e:
             print(f"Errore durante l'invio del messaggio: {e}")
+
+    def add_message_to_queue(self, message):
+        self.message_queue.put(message)
+
+    def stop_sending(self):
+        self.stop_sending_event.set()
+        self.message_queue.put(None)
+        self.sending_thread.join()
+
+    def send_messages_periodically(self, messages, interval):
+
+        while not self.stop_sending_event.is_set():
+            if not self.ensure_connection():
+                time.sleep(1)
+                continue
+
+            for message in messages:
+                self.add_message_to_queue(message)
+                time.sleep(0.5)
+
+            time.sleep(interval)
+
+    def subscribe(self, message):
+        # fare un confronto con tutti i subscribe
+        self.messages_to_send.append(message.arbitration_id)
+
+    def reset_subscribers(self):
+        self.messages_to_send = []
+
+    def subscribe_list(self, message_list):
+        for message in message_list:
+            self.subscribe(message)
+
+    def start_sending_periodically(self, interval):
+        self.is_sending = True
+        if self.send_thread is not None and self.send_thread.is_alive():
+            print("Il thread di invio è già in esecuzione.")
+            return
+
+        self.stop_sending_event.clear()
+        self.send_thread = threading.Thread(target=self.send_messages_periodically, args=(self.messages_to_send,
+                                                                                          interval))
+        self.send_thread.start()
+
+    def stop_sending_periodically(self):
+        self.is_sending = False
+        self.stop_sending_event.set()
+        if self.send_thread is not None:
+            self.send_thread.join()
+
+    def status(self):
+        return self.is_sending
 
 
 def attivi():

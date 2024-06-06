@@ -13,6 +13,17 @@ class Parameter:
     is_extended_id: bool
 
 
+# COSTANTS
+title_page0 = "page0"
+title_page1 = "page1"
+
+menu_connect = "connect"
+menu_disconnect = "disconnect"
+
+
+
+
+
 # RX
 m0x1003 = Parameter(name=["soc", "output", "fault", "min_temp", "max_temp", "time_to_full_charge", "warnings"],
                     arbitration_id=0x1003,
@@ -80,12 +91,8 @@ t2 = Parameter(name=["oila", "prova"],
                format="<Ii",
                is_extended_id=False)
 
-
-rx_messages = [m0x1007] #[t2]  # [m0x1003, m0x1005]
-tx_messages =  [m0x1006] #[t0, t1]  #
-
-rx_messages_main =[ m0x1003, m0x1005]
+rx_messages_main = [m0x1003, m0x1005]
 tx_messages_main = [m0x1002, m0x1004]
 rx_message_main_exception = ["output", "fault", "time_to_full_charge", "warnings"]#["output", "fault", "min_temp", "max_temp", "time_to_full_charge", "warnings"]
-rx_message_exception = []
-# Custom Widgets
+
+
