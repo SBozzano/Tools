@@ -19,6 +19,7 @@ title_page1 = "page1"
 
 menu_connect = "connect"
 menu_disconnect = "disconnect"
+menu_com = "COM"
 
 
 
@@ -91,8 +92,8 @@ t2 = Parameter(name=["oila", "prova"],
                format="<Ii",
                is_extended_id=False)
 
-rx_messages_main = [m0x1003, m0x1005]
-tx_messages_main = [m0x1002, m0x1004]
+rx_messages_main = [t2]
+tx_messages_main = [t0, t1]
 rx_message_main_exception = ["output", "fault", "time_to_full_charge", "warnings"]#["output", "fault", "min_temp", "max_temp", "time_to_full_charge", "warnings"]
 
 

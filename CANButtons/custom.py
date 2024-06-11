@@ -33,6 +33,7 @@ class CustomWidget(DefaultNotebook):
     def __init__(self, root):
         super().__init__(root)
         self.fault_text = tk.StringVar()
+        self.fault_text.set("cancc")
 
         self.button_enable_charge = ttk.Button(self.frame, text="ENABLE CHARGE",
                                                command=self.charge,
@@ -65,27 +66,23 @@ class CustomWidget(DefaultNotebook):
 
         self.label_sw1.grid(column=0, row=1, padx=10, pady=10)
         self.label_sw2.grid(column=1, row=1, padx=10, pady=10)
-        self.label_fault.grid(column=0, row=2, padx=10, pady=10)
+        self.label_fault.grid(column=0, row=2, padx=10, pady=10, columnspan=2)
+        self.label_fault_text.grid(column=0, row=3, padx=10, pady=10, sticky='w', columnspan=2)
 
     def discharge(self):
         if self.button_enable_discharge['text'] == 'ENABLE DISCHARGE':
             self.sender.send_one_message(classes.m0x1008_DISCHARGE)
-            # self.button_enable_charge.config(state='disable')
-            # self.button_enable_discharge.config( text='DISABLE DISCHARGE')
+
         elif self.button_enable_discharge['text'] == 'DISABLE DISCHARGE':
             self.sender.send_one_message(classes.m0x1008_NULL)
-            # self.button_enable_charge.config(state='enable')
-            # self.button_enable_discharge.config(text='ENABLE DISCHARGE')
+
 
     def charge(self):
         if self.button_enable_charge['text'] == 'ENABLE CHARGE':
             self.sender.send_one_message(classes.m0x1008_CHARGE)
-            # self.button_enable_discharge.config(state='disable')
-            # self.button_enable_charge.config( text='DISABLE CHARGE')
+
         elif self.button_enable_charge['text'] == 'DISABLE CHARGE':
             self.sender.send_one_message(classes.m0x1008_NULL)
-            # self.button_enable_discharge.config(state='enable')
-            # self.button_enable_charge.config(text='ENABLE CHARGE')
 
     def set_subscribers(self):
         self.receiver.subscribe(message_id=classes.m0x1003.arbitration_id, callback=self.receive)
@@ -99,65 +96,75 @@ class CustomWidget(DefaultNotebook):
         else:
             classes.m0x1003.data = message_rec.data
             datas = struct.unpack(classes.m0x1003.format, classes.m0x1003.data)
-            output = datas[1]
             no_fault = [0, 0, 0, 0, 0, 0, 0, 0]
             fault = ''
-            bits = [int(bit) for bit in bin(output)[2:]]
-            while len(bits) != 8:
-                bits.insert(0, 0)
 
-            if bool(bits[6]):
+            state_charge = datas[1]
+            state_charge_bits = [int(bit) for bit in bin(state_charge)[2:]]
+            while len(state_charge_bits) != 8:
+                state_charge_bits.insert(0, 0)
+
+            if bool(state_charge_bits[6]):
                 self.label_sw1.config(bg="red")
                 self.button_enable_discharge.config(state='disable', text='ENABLE DISCHARGE')
                 self.button_enable_charge.config(state='enable', text='DISABLE CHARGE')
             else:
                 self.label_sw1.config(bg="white")
 
-            if bool(bits[7]):
+            if bool(state_charge_bits[7]):
                 self.label_sw2.config(bg="red")
                 self.button_enable_charge.config(state='disable', text='ENABLE CHARGE')
                 self.button_enable_discharge.config(state='enable', text='DISABLE DISCHARGE')
             else:
                 self.label_sw2.config(bg="white")
 
-            if bool(bits[6]) and bool(bits[7]):
+            if bool(state_charge_bits[6]) and bool(state_charge_bits[7]):
                 self.button_enable_charge.config(state='enable', text='DISABLE CHARGE')
                 self.button_enable_discharge.config(state='enable', text='DISABLE DISCHARGE')
 
-            if not(bool(bits[6])) and not(bool(bits[7])):
+            if not(bool(state_charge_bits[6])) and not(bool(state_charge_bits[7])):
                 self.button_enable_charge.config(state='enable', text='ENABLE CHARGE')
                 self.button_enable_discharge.config(state='enable', text='ENABLE DISCHARGE')
 
-            if bool(bits[0]):
+            fault_init = 'Fault: '
+            state_fault = datas[1]
+            state_fault_bits = [int(bit) for bit in bin(state_fault)[2:]]
+            while len(state_fault_bits) != 8:
+                state_fault_bits.insert(0, 0)
+
+
+            if bool(state_fault_bits[0]):
                 fault += " Overcurrent "
 
-            if bool(bits[1]):
+            if bool(state_fault_bits[1]):
                 fault += " OverTemperature "
 
-            if bool(bits[2]):
+            if bool(state_fault_bits[2]):
                 fault += " UnderTemperature "
 
-            if bool(bits[3]):
+            if bool(state_fault_bits[3]):
                 fault += " OverVoltage "
 
-            if bool(bits[4]):
+            if bool(state_fault_bits[4]):
                 fault += " UnderVoltage "
 
-            if bool(bits[5]):
+            if bool(state_fault_bits[5]):
                 fault += " Timeout can BMS "
 
-            if bool(bits[6]):
+            if bool(state_fault_bits[6]):
                 fault += " Offset calibration failed "
 
-            if bool(bits[7]):
+            if bool(state_fault_bits[7]):
                 fault += " Reference fuori specifica "
 
-            if bits[:5] == no_fault[:5]:
+            if state_fault == 0:
                 self.label_fault.config(bg="white")
+                self.fault_text.set("")
             else:
                 self.label_fault.config(bg="red")
+                self.fault_text.set(fault_init + fault[1:])
 
-            self.fault_text.set(fault)
+
 
 
 class DefaultWidget(DefaultNotebook):
