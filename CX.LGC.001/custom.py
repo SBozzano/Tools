@@ -7,6 +7,8 @@ import threading
 
 
 class DefaultNotebook:
+    """ Classe madre per tutti i notebook """
+
     def __init__(self, root):
 
         ttk.Style(root).configure('red.TButton', background='red')
@@ -25,18 +27,36 @@ class DefaultNotebook:
         self.sender = new_sender
 
     def configure_grid(self, rows, columns, row_min_size, column_min_size):
+        """ configurazione dimensione celle:
+            rows = numero di righe da configurare
+            columns = numero di colonne da configurare
+            row_min_size = dimensione minima della riga
+            column_min_size = dimensione minima della colonna
+            """
+
         for row in range(rows):
             self.frame.grid_rowconfigure(row, minsize=row_min_size)
         for column in range(columns):
             self.frame.grid_columnconfigure(column, minsize=column_min_size)
 
+    def set_subscribers(self) -> None:
+        pass
+
+    def receive(self, message_rec) -> None:
+        pass
 
 class CustomWidget(DefaultNotebook):
+    """ finestra cusom configuata con bottoni e output """
+
     def __init__(self, root):
         super().__init__(root)
+        max_rows = 3
+        max_columns = classes.max_columns
+        row_min_size = 20
+        column_min_size = 130
         self.is_connected = False
+
         self.fault_text = tk.StringVar()
-        #  self.fault_text.set("cancc")
 
         self.button_enable_charge = ttk.Button(self.frame, text="ENABLE CHARGE",
                                                command=self.charge,
@@ -44,26 +64,16 @@ class CustomWidget(DefaultNotebook):
         self.button_enable_discharge = ttk.Button(self.frame, text="ENABLE DISCHARGE",
                                                   command=self.discharge,
                                                   style='white.TButton')
-
         self.label_sw1 = tk.Label(self.frame, text="CHARGE", borderwidth=2, relief="groove", bg="white", width=12,
                                   height=1)
         self.label_sw2 = tk.Label(self.frame, text="DISCHARGE", borderwidth=2, relief="groove", bg="white", width=12,
                                   height=1)
-
         self.label_fault = tk.Label(self.frame, text="FAULT", borderwidth=2, relief="groove", bg="white", width=6,
                                     height=1)
-
         self.button_reset_fault = ttk.Button(self.frame, text="RESET FAULT",
-                                               command=self.reset_fault,
-                                               style='white.TButton')
-
+                                             command=self.reset_fault,
+                                             style='white.TButton')
         self.label_fault_text = tk.Label(self.frame, textvariable=self.fault_text)
-
-        max_rows = 3
-        max_columns = classes.max_columns
-        row_min_size = 20
-        column_min_size = 130  # 130
-
         self.configure_grid(max_rows, max_columns, row_min_size, column_min_size)
 
         self.running = False
@@ -72,10 +82,14 @@ class CustomWidget(DefaultNotebook):
         self.monitor_thread.start()
         self.create_custom_widgets()
 
-    def set_is_connected(self, status):
+    def set_is_connected(self, status: bool):                                                               # cambiare
+        """ status = status da settare"""
+
         self.is_connected = status
 
-    def monitor_connection(self):
+    def monitor_connection(self) -> None:
+        """ controllo periodicamente se la connessione è attiva, se non lo è disabilito tuttii bottoni"""
+
         self.running = True
         while self.running:
             if not self.is_connected:
@@ -84,10 +98,11 @@ class CustomWidget(DefaultNotebook):
                 self.button_reset_fault.config(state='disable')
             time.sleep(0.5)
 
-    def stop(self):
+    def stop(self) -> None:
         self.running = False
 
     def create_custom_widgets(self) -> None:
+        """ posiziono i widgets """
         self.button_enable_charge.grid(column=0, row=0, padx=10, pady=10)
         self.button_enable_discharge.grid(column=1, row=0, padx=10, pady=10)
 
@@ -97,11 +112,15 @@ class CustomWidget(DefaultNotebook):
         self.button_reset_fault.grid(column=0, row=3, padx=10, pady=10, columnspan=2)
         self.label_fault_text.grid(column=0, row=4, padx=10, pady=10, sticky='w', columnspan=2)
 
-    def reset_fault(self):
+    def reset_fault(self) -> None:
+        """ invio un messaggio per resettare il fault del master """
+
         if self.sender is not None:
             self.sender.send_one_message(classes.m0x1008_NULL)
 
-    def discharge(self):
+    def discharge(self) -> None:
+        """  """
+
         if self.sender is not None:
             if self.button_enable_discharge['text'] == 'ENABLE DISCHARGE':
                 self.sender.send_one_message(classes.m0x1008_DISCHARGE)
@@ -109,7 +128,9 @@ class CustomWidget(DefaultNotebook):
             elif self.button_enable_discharge['text'] == 'DISABLE DISCHARGE':
                 self.sender.send_one_message(classes.m0x1008_NULL)
 
-    def charge(self):
+    def charge(self) -> None:
+        """  """
+
         if self.sender is not None:
             if self.button_enable_charge['text'] == 'ENABLE CHARGE':
                 self.sender.send_one_message(classes.m0x1008_CHARGE)
@@ -117,19 +138,19 @@ class CustomWidget(DefaultNotebook):
             elif self.button_enable_charge['text'] == 'DISABLE CHARGE':
                 self.sender.send_one_message(classes.m0x1008_NULL)
 
-    def set_subscribers(self):
+    def set_subscribers(self) -> None:
+        """ setto i messaggi da scrivere / leggere quando sono in questa pagina"""
         self.receiver.subscribe(message_id=classes.m0x1003.arbitration_id, callback=self.receive)
         self.sender.subscribe(message=classes.m0x1002)
 
     def receive(self, message_rec) -> None:
-
+        """ elaborazione messaggio 0x1003 """
         if classes.m0x1003.arbitration_id != message_rec.arbitration_id:
             print("ERROR -- custom callback ")
 
         else:
             classes.m0x1003.data = message_rec.data
             datas = struct.unpack(classes.m0x1003.format, classes.m0x1003.data)
-            no_fault = [0, 0, 0, 0, 0, 0, 0, 0]
             fault = ''
 
             state_charge = datas[1]
@@ -137,7 +158,7 @@ class CustomWidget(DefaultNotebook):
             while len(state_charge_bits) != 8:
                 state_charge_bits.insert(0, 0)
 
-            if bool(state_charge_bits[6]) :
+            if bool(state_charge_bits[6]):
                 self.label_sw1.config(bg="red")
                 if self.label_fault['bg'] == 'white':
                     self.button_enable_discharge.config(state='disable', text='ENABLE DISCHARGE')
@@ -207,6 +228,8 @@ class CustomWidget(DefaultNotebook):
 
 
 class DefaultWidget(DefaultNotebook):
+    """ visualizzazione di default: tutti i parametri della lista classes.rx_messages_main vengono visualizzati, eccetto
+    i nomi nella lista classes.rx_message_main_exception """
     def __init__(self, root):
         super().__init__(root)
         self.label_names_main = []
@@ -221,7 +244,7 @@ class DefaultWidget(DefaultNotebook):
 
         self.create_default_widgets()
 
-    def create_default_widgets(self):
+    def create_default_widgets(self) -> None:
         """ Crea un label per ogni name di ogni messaggio, ordinandoli nella griglia del frame "default" """
 
         column_counter = 0
@@ -245,7 +268,7 @@ class DefaultWidget(DefaultNotebook):
                             break
                         row_counter = 0
 
-    def set_subscribers(self):
+    def set_subscribers(self) -> None:
         self.receiver.subscribe_list(classes.rx_messages_main, self.receive)
         self.sender.subscribe_list(classes.tx_messages_main)
 
@@ -264,4 +287,4 @@ class DefaultWidget(DefaultNotebook):
                                 #  print ("label_name['text'][:1]: ", label_name['text'][:-1])
                                 #  print ( "name: ", name)
                                 if label_name['text'][:-1] == name:
-                                    self.label_messages_main[k].config(text=float(datas[i])*message.scale[i])
+                                    self.label_messages_main[k].config(text=float(datas[i]) * message.scale[i])

@@ -1,18 +1,16 @@
 import can
 import logging
-import time
 import threading
 import queue
-
-import signal
 import simply_can
-import sys
-
 import classes
 from simply_can import Message
-
 import time
-from classes import Parameter
+
+
+def thread_attivi():
+    print("Thread attivi:", threading.enumerate())
+
 
 class CanInterface:
     def __init__(self, interface='ixxat', channel=0, bitrate=500000):
@@ -73,6 +71,7 @@ class CanInterface:
             except can.CanError as e:
                 print(f"Errore durante l'invio del messaggio: {e}")
 
+
 class CANReceiver:
     def __init__(self):
         self.bus = None
@@ -109,7 +108,6 @@ class CANReceiver:
     def receive_messages(self):
         """Ricevi e gestisci i messaggi sulla rete CAN."""
 
-
         self.timeout_error = False
         self.receive_error = False
         while not self.stop_receiving_event.is_set() and self.bus is not None:
@@ -119,7 +117,7 @@ class CANReceiver:
             message = None
 
             try:
-              #  print("NAME: ", self.ixxat_name )
+                #  print("NAME: ", self.ixxat_name )
                 if self.ixxat_name == classes.ixxat_available[1]:
                     message = self.bus.recv(self.timeout)
                     if message is None:
@@ -128,12 +126,12 @@ class CANReceiver:
                         continue
                 elif self.ixxat_name == classes.ixxat_available[0]:
                     start_time = time.time()
-                   # print("HERE: ", message)
+                    # print("HERE: ", message)
 
                     while time.time() - start_time <= self.timeout and message is None:
                         res, message = self.bus.receive()
                         time.sleep(0.1)
-                     #   print("time.time() - start_time: ", time.time() - start_time)
+                        #   print("time.time() - start_time: ", time.time() - start_time)
                         if time.time() - start_time >= self.timeout:
                             logging.error("Nessun messaggio ricevuto entro il timeout")
                             self.timeout_error = True
@@ -151,7 +149,7 @@ class CANReceiver:
             message_gen = self.message_queue.get()
             if message_gen is None:
                 break
-           # print("size recive: ", self.message_queue.qsize())
+            # print("size recive: ", self.message_queue.qsize())
             logging.debug(f"Elaborazione del messaggio: {message_gen}")
 
             if self.ixxat_name == classes.ixxat_available[0]:
@@ -170,12 +168,12 @@ class CANReceiver:
                     try:
                         if message.is_error_frame:
                             print("EROOR FRAMMEEEEE")
-                      #  print("message: ", message)
+                        #  print("message: ", message)
                         callback(message)
 
                     except Exception as e:
                         logging.error(f"Errore durante l'elaborazione del messaggio: {e}")
-           # print("AAAAA")
+            # print("AAAAA")
 
             self.message_queue.task_done()
 
@@ -204,12 +202,12 @@ class CANReceiver:
         self.receive_thread = None
         self.message_queue.put(None)  # Per sbloccare il thread di elaborazione
 
-
     def reset_subscribers(self):
         self.subscribers = {}
 
     def status(self):
         return self.is_receiving
+
 
 class CANSender:
     def __init__(self):
@@ -228,19 +226,17 @@ class CANSender:
         self.interval = None
 
     def set_bus(self, bus):
-        print("bus to set11: ", bus)
         self.bus = bus
 
     def set_ixxat(self, ixxat_name):
         self.ixxat_name = ixxat_name
-
 
     def process_queue(self):
         while True:
             message = self.message_queue.get()
             if message is None:
                 break
-           # print("size sender: ", self.message_queue.qsize())
+            # print("size sender: ", self.message_queue.qsize())
             self.send_one_message(message)
             self.message_queue.task_done()
             time.sleep(0.3)
@@ -261,19 +257,14 @@ class CANSender:
                         logging.error(f"Errore durante il controllo della connessione: {e}")
                         self.send_error = True
 
-
-
-
                 elif self.ixxat_name == classes.ixxat_available[0]:
                     if is_extended_id:
                         msg = Message(ident=arbitration_id, payload=data, flags='E')
                     else:
-                        msg = Message(ident=arbitration_id, payload=data) #, flags='R'
+                        msg = Message(ident=arbitration_id, payload=data)  # , flags='R'
 
                     self.send_message(self.bus, msg)
 
-
-           #     print(f"Messaggio inviato: {msg}")
         except can.CanError as e:
             logging.error(f"Errore durante l'invio del messaggio: {e}")
             self.send_error = True
@@ -300,10 +291,11 @@ class CANSender:
     def subscribe_list(self, message_list):
         for message in message_list:
             self.subscribe(message)
+
     def get_send_error(self):
         return self.send_error
-    def start_sending_periodically(self, interval):
 
+    def start_sending_periodically(self, interval):
 
         self.interval = interval
         self.is_sending = True
@@ -328,39 +320,12 @@ class CANSender:
     def send_message(self, simply, msg):
         try:
             simply.send(msg)
-         #   print("messaggio inviato: ", msg)
+            #   print("messaggio inviato: ", msg)
             simply.flush_tx_fifo()
         except Exception as e:
             self.send_error = True
             logging.error(f"Errore durante il controllo della connessione: {e}")
 
-
-
-def attivi():
-    thread_attivi = threading.enumerate()
-    print("Thread attivi:", thread_attivi)
-
-
-# class ConnectionMonitor:
-#     def __init__(self, can_interface):
-#         self.can_interface = can_interface
-#         self.monitor_thread = threading.Thread(target=self.monitor_connection)
-#         self.monitor_thread.daemon = True
-#         self.running = False
-#
-#     def start(self):
-#         self.running = True
-#         self.monitor_thread.start()
-#
-#     def stop(self):
-#         self.running = False
-#
-#     def monitor_connection(self):
-#         while self.running:
-#             if not self.can_interface.is_connected():
-#                 print("Connessione persa. Tentativo di riconnessione...")
-#                 self.can_interface.reconnect()
-#             time.sleep(1)  # Controllo ogni secondo
 
 class SimplyCanInterface:
     def __init__(self, ser_port, baudrate):
@@ -377,48 +342,41 @@ class SimplyCanInterface:
 
     def get_status(self):
         return self.status
+
     def configure_bus(self):
-        print("\n#### simplyCAN Demo 2.0 (c) 2018-2022 HMS ####\n")
+        print("\n#### simplyCAN 2.0 (c) 2018-2022 HMS ####\n")
 
         self.simply = simply_can.SimplyCAN()
         self.SimplyObj = self.simply
-        print("self.ser_port: ", self.ser_port)
         if not self.simply.open(self.ser_port):
             self.error(self.simply)
 
         else:
             print(f"Serial port {self.ser_port} opened successfully.")
-            id = self.simply.identify()
-            if not id:
+            identify = self.simply.identify()
+            if not identify:
                 self.error(self.simply)
             else:
-                print("Firmware version:", id.fw_version.decode("utf-8"))
-                print("Hardware version:", id.hw_version.decode("utf-8"))
-                print("Product version: ", id.product_version.decode("utf-8"))
-                print("Product string:  ", id.product_string.decode("utf-8"))
-                print("Serial number:   ", id.serial_number.decode("utf-8"))
+                print("Firmware version:", identify.fw_version.decode("utf-8"))
+                print("Hardware version:", identify.hw_version.decode("utf-8"))
+                print("Product version: ", identify.product_version.decode("utf-8"))
+                print("Product string:  ", identify.product_string.decode("utf-8"))
+                print("Serial number:   ", identify.serial_number.decode("utf-8"))
 
                 res = self.simply.stop_can()  # to be on the safer side
                 res &= self.simply.initialize_can(self.baudrate)
                 res &= self.simply.start_can()
-                print("TRUEEE")
                 self.status = True
-                # if not res:
-                #     self.error(self.simply)
-
-
 
     def error(self, simply):
         err = simply.get_last_error()
         print("Error:", simply.get_error_string(err))
-       # self.signal_handler()
-
 
     def get_bus(self):
         return self.simply
 
     def monitor_connection(self):
-        self.running = False                                                                                       #TRUE
+        self.running = False  # TRUE
         while self.running:
             time.sleep(2)
 
@@ -430,14 +388,12 @@ class SimplyCanInterface:
                     time.sleep(1)  # Attendi un po' prima di ritentare
                 else:
                     self.status = False
-           #     self.send_error = True
+        #     self.send_error = True
 
-
-            # if not self.check_connection():
-            #     print("Connessione persa.")
-            #     self.status = False
-            #
-
+        # if not self.check_connection():
+        #     print("Connessione persa.")
+        #     self.status = False
+        #
 
     # def check_connection(self):
     #     try:
@@ -475,10 +431,3 @@ class SimplyCanInterface:
         if self.SimplyObj:
             self.SimplyObj.close()
         self.close()
-
-
-
-
-
-
-

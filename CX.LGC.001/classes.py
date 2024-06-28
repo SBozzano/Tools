@@ -1,8 +1,4 @@
-from enum import Enum
 from dataclasses import dataclass
-import tkinter as tk
-from tkinter import ttk
-
 
 @dataclass
 class Parameter:
@@ -109,5 +105,5 @@ t2 = Parameter(name=["oila", "prova"],
 
 rx_messages_main = [m0x1003, m0x1005]
 tx_messages_main = [m0x1002, m0x1004]
-rx_message_main_exception = ["output", "fault", "time_to_full_charge",
-                             "warnings"]  # ["output", "fault", "min_temp", "max_temp", "time_to_full_charge", "warnings"]
+rx_message_main_exception = ["output", "fault", "time_to_full_charge", "warnings"]
+# ["output", "fault", "min_temp", "max_temp", "time_to_full_charge", "warnings"]
