@@ -1,0 +1,91 @@
+[
+    {
+        "name": [
+            "Soc [%]",
+            "output",
+            "fault",
+            "Min_temp [\u00b0C]",
+            "Max_temp [\u00b0C]",
+            "time_to_full_charge",
+            "warnings"
+        ],
+        "arbitration_id": 4099,
+        "data": [],
+        "format": ">BBBbbhB",
+        "is_extended_id": true,
+        "scale": [1, 1, 1, 1, 1, 1, 1]
+    },
+    {
+        "name": [
+            "Voltage [V]",
+            "Current [A]"
+        ],
+        "arbitration_id": 4101,
+        "data": [],
+        "format": "<Ii",
+        "is_extended_id": true,
+        "scale": [0.001, 0.001]
+    },
+    {
+        "name": [
+            "max_voltage_cell",
+            "min_voltage_cell",
+            "sbilanciamento",
+            "cicli",
+            "SoH%"
+        ],
+        "arbitration_id": 4103,
+        "data": [],
+        "format": "<HHHBB",
+        "is_extended_id": true,
+        "scale": [1, 1, 1, 1, 1]
+    },
+    {
+        "name": [],
+        "arbitration_id": 4098,
+        "data": [ 0, 0, 0, 0, 0, 0, 0, 0],
+        "format": "",
+        "is_extended_id": true,
+        "scale": []
+    },
+    {
+        "name": [],
+        "arbitration_id": 4100,
+        "data": [0, 0, 0, 0, 0, 0, 0, 0],
+        "format": "",
+        "is_extended_id": true,
+        "scale": []
+    },
+    {
+        "name": [],
+        "arbitration_id": 4102,
+        "data": [0, 0, 0, 0, 0, 0, 0, 0 ],
+        "format": "",
+        "is_extended_id": true,
+        "scale": []
+    },
+    {
+        "name": [],
+        "arbitration_id": 4104,
+        "data": [0, 0, 0, 0, 0, 0, 0, 1],
+        "format": "",
+        "is_extended_id": true,
+        "scale": []
+    },
+    {
+        "name": [],
+        "arbitration_id": 4104,
+        "data": [0, 0, 0, 0, 0, 0, 1, 0],
+        "format": "",
+        "is_extended_id": true,
+        "scale": []
+    },
+    {
+        "name": [],
+        "arbitration_id": 4104,
+        "data": [0, 0, 0, 0, 0, 0, 0, 0],
+        "format": "",
+        "is_extended_id": true,
+        "scale": []
+    }
+]

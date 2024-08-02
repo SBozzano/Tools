@@ -1,0 +1,43 @@
+[
+    {
+        "name": [
+            "Soc [%]",
+            "output",
+            "fault",
+            "Min_temp [\u00b0C]",
+            "Max_temp [\u00b0C]",
+            "time_to_full_charge",
+            "warnings"
+        ],
+        "arbitration_id": 4099,
+        "data": [],
+        "format": ">BBBbbhB",
+        "is_extended_id": true,
+        "scale": [1, 1, 1, 1, 1, 1, 1]
+    },
+    {
+        "name": [
+            "Voltage [V]",
+            "Current [A]"
+        ],
+        "arbitration_id": 4101,
+        "data": [],
+        "format": "<Ii",
+        "is_extended_id": true,
+        "scale": [0.001, 0.001]
+    },
+    {
+        "name": [
+            "max_voltage_cell",
+            "min_voltage_cell",
+            "sbilanciamento",
+            "cicli",
+            "SoH%"
+        ],
+        "arbitration_id": 4103,
+        "data": [],
+        "format": "<HHHBB",
+        "is_extended_id": true,
+        "scale": [1, 1, 1, 1, 1]
+    }
+]

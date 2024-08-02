@@ -1,0 +1,1 @@
+nel .exe non va la conversione da excel a file oscc o txt

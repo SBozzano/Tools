@@ -52,32 +52,122 @@ class Parameter:
         )
 
 def load_parameters_from_json(file_path):
-    """Carica una lista di oggetti Parameter da un file JSON"""
+    """Carica i parametri da un file JSON"""
     with open(file_path, 'r') as file:
         data = json.load(file)
-        return [Parameter.from_dict(item) for item in data]
+        tx_params = [Parameter.from_dict(item) for item in data.get("tx_parameters", [])]
+        rx_params = [Parameter.from_dict(item) for item in data.get("rx_parameters", [])]
+        ignore_params = data.get("ignore", [])
+        return tx_params, rx_params, ignore_params
 
-def save_parameters_to_json(file_path, parameters):
-    """Salva una lista di oggetti Parameter in un file JSON"""
+def save_parameters_to_json(file_path, tx_params, rx_params, ignore_params):
+    """Salva i parametri in un file JSON"""
+    data = {
+        "tx_parameters": [param.to_dict() for param in tx_params],
+        "rx_parameters": [param.to_dict() for param in rx_params],
+        "ignore": ignore_params
+    }
     with open(file_path, 'w') as file:
-        json.dump([param.to_dict() for param in parameters], file, indent=4)
+        json.dump(data, file, indent=4)
 
 # Esempio di utilizzo
-parameters = [
+tx_parameters = [
+    Parameter(
+        name=["Soc [%]", "output", "fault", "Min_temp [°C]", "Max_temp [°C]", "time_to_full_charge", "warnings"],
+        arbitration_id=0x1003,
+        data=[],
+        format='>BBBbbhB',
+        is_extended_id=True,
+        scale=[1, 1, 1, 1, 1, 1, 1]),
+    Parameter(name=["Voltage [V]", "Current [A]"],
+              arbitration_id=0x1005,
+              data=[],
+              format='<Ii',
+              is_extended_id=True,
+              scale=[0.001, 0.001]),
     Parameter(name=["max_voltage_cell", "min_voltage_cell", "sbilanciamento", "cicli", "SoH%"],
               arbitration_id=0x1007,
-              data=[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07],
+              data=[],
               format='<HHHBB',
               is_extended_id=True,
               scale=[1, 1, 1, 1, 1])
 ]
 
+rx_parameters = [
+    Parameter(name=[],
+              arbitration_id=0x1002,
+              data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+    Parameter(name=[],
+              arbitration_id=0x1004,
+              data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+    Parameter(name=[],
+              arbitration_id=0x1006,
+              data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+    Parameter(name=[],
+              arbitration_id=0x1008,
+              data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+    Parameter(name=[],
+              arbitration_id=0x1008,
+              data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+    Parameter(name=[],
+              arbitration_id=0x1008,
+              data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+    Parameter(name=[],
+              arbitration_id=0x1010,
+              data=[0x01, 0x00, 0x01, 0x00],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+    Parameter(name=[],
+              arbitration_id=0x1012,
+              data=[0x00, 0x01, 0x00, 0x01],
+              format="",
+              is_extended_id=True,
+              scale=[]),
+]
+
+ignore_parameters = [
+    "parameter1",
+    "parameter2",
+    "parameter3"
+]
+
 # Salva i parametri in un file JSON
-save_parameters_to_json('parameters.json', parameters)
+save_parameters_to_json('parameters.json', tx_parameters, rx_parameters, ignore_parameters)
 
 # Carica i parametri dal file JSON
-loaded_parameters = load_parameters_from_json('parameters.json')
+loaded_config_parameters, loaded_tx_parameters, loaded_rx_parameters, loaded_ignore_parameters = load_parameters_from_json('parameters.json')
 
 # Stampa i parametri caricati
-for param in loaded_parameters:
+print("Config Parameters:")
+for param in loaded_config_parameters:
     print(param)
+
+print("\nTX Parameters:")
+for param in loaded_tx_parameters:
+    print(param)
+
+print("\nRX Parameters:")
+for param in loaded_rx_parameters:
+    print(param)
+
+print("\nIgnore Parameters:")
+print(loaded_ignore_parameters)
