@@ -49,7 +49,7 @@ def file_path_request() -> str:
     current_directory = os.getcwd()
     # parent_directory = os.path.dirname(current_directory)
     return filedialog.askopenfilename(
-        title="Select file",
+        title="V1.3.00 - Select file",
         initialdir=current_directory,
         filetypes=(
             ("All files", "*.xlsx *.OSC *.csv"),
@@ -232,18 +232,19 @@ class App(tk.Tk):
             row = 0
             column = 0
 
-            try:
-                for color, index in enumerate(tracks_window.get_names_index(), start=0):
-                    column = index + 2
 
-                    if all_cells[index + int(time_found)][0] is not None:
-                        file_ssc.write(
-                            ssc_texts.Text10 + all_cells[index + int(time_found)][0] + ssc_texts.Text11 +
-                            ssc_texts.ColorString[
-                                color] + ssc_texts.Text12)
-                        time = 0
-                        for sample in range(1, len(all_cells[0])):
-                            row = sample + 1
+            for color, index in enumerate(tracks_window.get_names_index(), start=0):
+                column = index + 2
+
+                if all_cells[index + int(time_found)][0] is not None:
+                    file_ssc.write(
+                        ssc_texts.Text10 + all_cells[index + int(time_found)][0] + ssc_texts.Text11 +
+                        ssc_texts.ColorString[
+                            color] + ssc_texts.Text12)
+                    time = 0
+                    for sample in range(1, len(all_cells[0])):
+                        row = sample + 1
+                        try:
                             if time_found:
                                 # time_to_use = all_cells[0][sample]
                                 num_str = str(all_cells[0][sample])
@@ -258,17 +259,19 @@ class App(tk.Tk):
                             data = float(data_str_corrected)
                             file_ssc.write(
                                 ssc_texts.Text13 + str(time) + ssc_texts.Text14 + str(data) + ssc_texts.Text15)
+                        except:
+                            pass
+                            # messagebox.showwarning("Error", f"Error in excel file: [{row} ; {column}]")
 
-                        file_ssc.write(ssc_texts.Text16)
-                    else:
-                        break
-                file_ssc.write(ssc_texts.TextEnd)
-                file_ssc.close()
+                    file_ssc.write(ssc_texts.Text16)
+                else:
+                    break
+            file_ssc.write(ssc_texts.TextEnd)
+            file_ssc.close()
 
-            except:
-                messagebox.showwarning("Error", f"Error in excel file: [{row} ; {column}]")
-                file_ssc.close()
-                os.remove(path_excel[:-5] + '.SSC')
+
+            # file_ssc.close()
+            # os.remove(path_excel[:-5] + '.SSC')
 
             print("SSC creato")
             messagebox.showinfo("Info", "Done")

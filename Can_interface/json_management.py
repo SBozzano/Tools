@@ -1,6 +1,7 @@
 import json
 import struct
 
+
 class Parameter:
     def __init__(self, name, arbitration_id, data, format, is_extended_id, scale):
         self.name = name
@@ -51,6 +52,7 @@ class Parameter:
             scale=data["scale"]
         )
 
+
 def load_parameters_from_json(file_path):
     """Carica i parametri da un file JSON"""
     with open(file_path, 'r') as file:
@@ -59,6 +61,7 @@ def load_parameters_from_json(file_path):
         rx_params = [Parameter.from_dict(item) for item in data.get("rx_parameters", [])]
         ignore_params = data.get("ignore", [])
         return tx_params, rx_params, ignore_params
+
 
 def save_parameters_to_json(file_path, tx_params, rx_params, ignore_params):
     """Salva i parametri in un file JSON"""
@@ -70,15 +73,16 @@ def save_parameters_to_json(file_path, tx_params, rx_params, ignore_params):
     with open(file_path, 'w') as file:
         json.dump(data, file, indent=4)
 
+
 # Esempio di utilizzo
-tx_parameters = [
+rx_parameters = [
     Parameter(
         name=["Soc [%]", "output", "fault", "Min_temp [°C]", "Max_temp [°C]", "time_to_full_charge", "warnings"],
         arbitration_id=0x1003,
         data=[],
         format='>BBBbbhB',
         is_extended_id=True,
-        scale=[1, 1, 1, 1, 1, 1, 1]),
+        scale=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]),
     Parameter(name=["Voltage [V]", "Current [A]"],
               arbitration_id=0x1005,
               data=[],
@@ -90,10 +94,10 @@ tx_parameters = [
               data=[],
               format='<HHHBB',
               is_extended_id=True,
-              scale=[1, 1, 1, 1, 1])
+              scale=[1.0, 1.0, 1.0, 1.0, 1.0])
 ]
 
-rx_parameters = [
+tx_parameters = [
     Parameter(name=[],
               arbitration_id=0x1002,
               data=[0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],
@@ -154,12 +158,12 @@ ignore_parameters = [
 save_parameters_to_json('parameters.json', tx_parameters, rx_parameters, ignore_parameters)
 
 # Carica i parametri dal file JSON
-loaded_config_parameters, loaded_tx_parameters, loaded_rx_parameters, loaded_ignore_parameters = load_parameters_from_json('parameters.json')
-
-# Stampa i parametri caricati
-print("Config Parameters:")
-for param in loaded_config_parameters:
-    print(param)
+loaded_tx_parameters, loaded_rx_parameters, loaded_ignore_parameters = load_parameters_from_json('parameters.json')
+# loaded_config_parameters,
+# # Stampa i parametri caricati
+# print("Config Parameters:")
+# for param in loaded_config_parameters:
+#     print(param)
 
 print("\nTX Parameters:")
 for param in loaded_tx_parameters:

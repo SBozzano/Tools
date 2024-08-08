@@ -18,6 +18,7 @@ from tkinter import messagebox
 
 import serial.tools.list_ports
 import threading
+import json_management
 
 
 def show_messagebox(text) -> None:
@@ -87,7 +88,7 @@ class App(tk.Tk):
         # Aggiungi il menu "Settings" alla menubar
         self.settings_menu = tk.Menu(menubar, tearoff=0)
         self.settings_menu.add_command(label="Communication settings", command=self.show_settings)
-        self.settings_menu.add_command(label="Messages settings", command= self.show_menu_messages)
+        self.settings_menu.add_command(label="Messages settings", command=self.show_menu_messages)
 
         menubar.add_cascade(label="Settings", menu=self.settings_menu)
         self.config(menu=menubar)
@@ -281,9 +282,8 @@ class App(tk.Tk):
 
     def show_menu_messages(self) -> None:
         """ menu pop up settings"""
-
-        settings_window = MessagesMenu(self, [],[])
-
+        tx_messages, rx_messages, ignore = json_management.load_parameters_from_json("parameters.json")
+        settings_window = MessagesMenu(self, tx_messages, rx_messages, ignore)
 
 
 class LED(tk.Canvas):

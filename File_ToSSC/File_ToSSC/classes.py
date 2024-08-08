@@ -51,7 +51,14 @@ class TracksWindow(tk.Toplevel):
         group.grid(row=0, column=0, padx=10, pady=10, columnspan=2)
 
         for i, name in enumerate(self.names_list, start=0):
-            self.check_var.append(tk.IntVar())
+
+            if i < 8:
+                status = True
+                self.valid_names_index_list.append(i)
+            else:
+                status = False
+
+            self.check_var.append(tk.IntVar(value=status))
             self.create_check_button(group, name, i)
 
         # Aggiunge un evento per aggiornare la scrollregion del canvas

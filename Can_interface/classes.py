@@ -14,14 +14,14 @@ class Parameter:
     scale: list
 
 
-# @dataclass
-# class ParameterWidget:
-#     name: ttk.Entry
-#     arbitration_id: ttk.Entry
-#     data: ttk.Entry
-#     format: ttk.Entry
-#     is_extended_id: ttk.Entry
-#     scale: ttk.Entry
+@dataclass
+class ParameterWidget:
+    name: ttk.Entry
+    arbitration_id: ttk.Entry
+    data: ttk.Entry
+    format: ttk.Entry
+    is_extended_id: ttk.Entry
+    scale: ttk.Entry
 
 
 # COSTANTS
@@ -124,5 +124,3 @@ rx_messages_main = [m0x1003, m0x1005]
 tx_messages_main = [m0x1002, m0x1004]
 rx_message_main_exception = ["output", "fault", "time_to_full_charge", "warnings"]
 # ["output", "fault", "min_temp", "max_temp", "time_to_full_charge", "warnings"]
-
-
