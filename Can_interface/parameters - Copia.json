@@ -1,132 +1,34 @@
 {
     "tx_parameters": [
         {
-            "name": [],
-            "arbitration_id": 4098,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
+            "name": [
+                "Enable"
             ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4100,
+            "arbitration_id": 24640,
             "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
+                15
             ],
-            "format": "",
+            "format": "<h",
             "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4102,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4104,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
+            "scale": [
                 1
             ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
+            "period": 2
         },
         {
-            "name": [],
-            "arbitration_id": 4104,
+            "name": [
+                "Disable"
+            ],
+            "arbitration_id": 24641,
             "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                1,
                 0
             ],
-            "format": "",
+            "format": "<h",
             "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4104,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4112,
-            "data": [
-                1,
-                0,
-                1,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4114,
-            "data": [
-                0,
-                1,
-                0,
+            "scale": [
                 1
             ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
+            "period": 1
         }
     ],
     "rx_parameters": [
@@ -152,7 +54,8 @@
                 1.0,
                 1.0,
                 1.0
-            ]
+            ],
+            "period": 0
         },
         {
             "name": [
@@ -161,12 +64,13 @@
             ],
             "arbitration_id": 4101,
             "data": [],
-            "format": "<Ii",
+            "format": "<bb",
             "is_extended_id": true,
             "scale": [
                 0.001,
                 0.001
-            ]
+            ],
+            "period": 0
         },
         {
             "name": [
@@ -186,12 +90,67 @@
                 1.0,
                 1.0,
                 1.0
-            ]
+            ],
+            "period": 0
+        },
+        {
+            "name": [
+                "Vo44ltage [V]",
+                "Curre44nt [A]"
+            ],
+            "arbitration_id": 4096,
+            "data": [],
+            "format": "<Ii",
+            "is_extended_id": true,
+            "scale": [
+                0.0,
+                3.001
+            ],
+            "period": 0
+        },
+        {
+            "name": [
+                "Bootup"
+            ],
+            "arbitration_id": 1793,
+            "data": [],
+            "format": "<b",
+            "is_extended_id": true,
+            "scale": [
+                1.0
+            ],
+            "period": 0
         }
     ],
     "ignore": [
-        "parameter1",
-        "parameter2",
-        "parameter3"
+        "Vo44ltage [V]",
+        "min_voltage_cell"
+    ],
+    "leds": [
+        {
+            "led": "DO0",
+            "name": "Voltage [V]",
+            "value": 5.0
+        },
+        {
+            "led": "DO1",
+            "name": "Bootup",
+            "value": 0.0
+        },
+        {
+            "led": "DO2",
+            "name": "",
+            "value": 0.0
+        },
+        {
+            "led": "DO3",
+            "name": "",
+            "value": 1.0
+        },
+        {
+            "led": "DO4",
+            "name": "",
+            "value": 1.0
+        }
     ]
 }

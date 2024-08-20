@@ -6,6 +6,7 @@ import simply_can
 import classes
 from simply_can import Message
 import time
+import struct
 
 
 def thread_attivi():
@@ -77,7 +78,7 @@ class CANReceiver:
         self.bus = None
         self.ixxat_name = None
         self.receive_thread = None
-        self.timeout = 8
+        self.timeout = classes.timeout
         self.subscribers = {}  # Dizionario degli ID di arbitraggio con i relativi callback
         self.stop_receiving_event = threading.Event()
         self.message_queue = queue.Queue()
@@ -121,8 +122,9 @@ class CANReceiver:
                 if self.ixxat_name == classes.ixxat_available[1]:
                     message = self.bus.recv(self.timeout)
                     if message is None:
-                        logging.error("Nessun messaggio ricevuto entro il timeout")
-                        self.timeout_error = True
+                        # logging.error("Nessun messaggio ricevuto entro il timeout")
+                        if self.timeout:
+                            self.timeout_error = True
                         continue
                 elif self.ixxat_name == classes.ixxat_available[0]:
                     start_time = time.time()
@@ -133,8 +135,9 @@ class CANReceiver:
                         time.sleep(0.1)
                         #   print("time.time() - start_time: ", time.time() - start_time)
                         if time.time() - start_time >= self.timeout:
-                            logging.error("Nessun messaggio ricevuto entro il timeout")
-                            self.timeout_error = True
+                            # logging.error("Nessun messaggio ricevuto entro il timeout")
+                            if self.timeout:
+                                self.timeout_error = True
 
                 self.message_queue.put(message)
             except can.CanError as e:
@@ -239,29 +242,36 @@ class CANSender:
             # print("size sender: ", self.message_queue.qsize())
             self.send_one_message(message)
             self.message_queue.task_done()
-            time.sleep(0.3)
+            time.sleep(classes.time_between_two_messages)
+
+
 
     def send_one_message(self, message):
         try:
             with self.lock:
                 arbitration_id = message.arbitration_id
-                data = message.data
+                datas = message.data
+                datas_scaled = []
+                for i in range(len(datas)):
+                    datas_scaled.append(datas[i] * message.scale[i])
+
+                datas_pack = struct.pack(message.format, *datas_scaled)
                 is_extended_id = message.is_extended_id
                 if self.ixxat_name == classes.ixxat_available[1]:
 
-                    msg = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=is_extended_id)
+                    msg = can.Message(arbitration_id=arbitration_id, data=datas_pack, is_extended_id=is_extended_id)
                     try:
                         self.bus.send(msg)
-                        print("mess senddd")
+                        print("mess send: ", arbitration_id, datas_pack, is_extended_id)
                     except Exception as e:
                         logging.error(f"Errore durante il controllo della connessione: {e}")
                         self.send_error = True
 
                 elif self.ixxat_name == classes.ixxat_available[0]:
                     if is_extended_id:
-                        msg = Message(ident=arbitration_id, payload=data, flags='E')
+                        msg = Message(ident=arbitration_id, payload=datas_pack, flags='E')
                     else:
-                        msg = Message(ident=arbitration_id, payload=data)  # , flags='R'
+                        msg = Message(ident=arbitration_id, payload=datas_pack)  # , flags='R'
 
                     self.send_message(self.bus, msg)
 
@@ -290,7 +300,10 @@ class CANSender:
 
     def subscribe_list(self, message_list):
         for message in message_list:
-            self.subscribe(message)
+
+            if int(message.period) == -1:
+
+                self.subscribe(message)
 
     def get_send_error(self):
         return self.send_error

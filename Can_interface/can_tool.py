@@ -32,17 +32,20 @@ def get_com_ports() -> list:
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.leds = None
         self.can_interface_simply = None
         self.sender = None
         self.receiver = None
         self.can_interface = None
         self.actual_com = ["None"]
         # self.actual_com = self.get_com_ports()[0]
-        self.actual_baudrate = 500
+        self.actual_baudrate = 125
         self.actual_ixxat = classes.ixxat_available[0]
         self.title('Battery CAN')
         self.resizable(False, False)
         self.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        self.tx_messages, self.rx_messages, self.ignore, self.leds = self.get_messages_list()
 
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(pady=10, fill='both', expand=True)
@@ -66,8 +69,9 @@ class App(tk.Tk):
 
         # frame1: costituito da widget_default e widget_custom
         self.frame1 = ttk.Frame(self.notebook)
-        self.widget_default = DefaultWidget(self.frame1)
-        self.widget_custom = CustomWidget(self.frame1)
+        self.widget_default = DefaultWidget(self.frame1, self.tx_messages, self.rx_messages, self.ignore)
+        self.widget_custom = CustomWidget(self.frame1, self.tx_messages, self.rx_messages, self.leds)
+
         self.frame_standard = self.widget_default.frame
         self.frame_custom = self.widget_custom.frame  # ttk.Frame(self.frame1, style='red.TButton')
         self.frame_standard.pack(side='bottom', fill='both', expand=True)  # bottom
@@ -103,6 +107,9 @@ class App(tk.Tk):
         self.monitor_thread = threading.Thread(target=self.monitor_connection)
         self.monitor_thread.daemon = True
         self.monitor_thread.start()
+
+    def get_messages_list(self):
+        return json_management.load_parameters_from_json("parameters.json")
 
     def monitor_connection(self) -> None:
         """ controlla lo stato della connessione ogni X ms """
@@ -194,11 +201,12 @@ class App(tk.Tk):
 
     def stop_connection(self) -> None:
         """ smetto di inviare e ricevere, disconnetto dal bus CAN resetto gli oggetti"""
-
+        print("provo a sisconnettere 0")
         self.running = False
+        print("provo a sisconnettere 1 ")
         self.file_menu.entryconfig(classes.menu_connect, state=tk.NORMAL)
         self.file_menu.entryconfig(classes.menu_disconnect, state=tk.DISABLED)
-
+        print("provo a sisconnettere 2")
         if self.sender is not None:
             self.sender.stop_sending_periodically()
 
@@ -213,9 +221,10 @@ class App(tk.Tk):
         if self.can_interface_simply is not None:
             self.can_interface_simply.signal_handler()
             self.can_interface_simply = None
-
+        print("provo a sisconnettere 3")
         self.widget_custom.set_is_connected(False)
         self.led.toggle(False)
+        print("provo a sisconnettere 4")
 
     def reset_tx_rx(self) -> None:
         """ resetto le liste delle variabili da inviare e ricevere: a seconda della pagina incui sono posso
@@ -237,7 +246,7 @@ class App(tk.Tk):
             self.receiver.start_receiving()
 
         if not self.sender.status():
-            self.sender.start_sending_periodically(1)
+            self.sender.start_sending_periodically(classes.interval_periodic_messages)
 
     def simulate_tab_change(self, tab_text) -> None:
         """ simulo di aver cambiato pagina per scatenare l'evento """
@@ -282,9 +291,17 @@ class App(tk.Tk):
 
     def show_menu_messages(self) -> None:
         """ menu pop up settings"""
-        tx_messages, rx_messages, ignore = json_management.load_parameters_from_json("parameters.json")
-        settings_window = MessagesMenu(self, tx_messages, rx_messages, ignore)
+        # tx_messages, rx_messages, ignore = json_management.load_parameters_from_json("parameters.json")
+        self.tx_messages, self.rx_messages, self.ignore, self.leds = self.get_messages_list()
+        settings = MessagesMenu(self, self.tx_messages, self.rx_messages, self.ignore, self.leds)
+        self.wait_window(settings)
+        self.tx_messages, self.rx_messages, self.ignore, self.leds = self.get_messages_list()
+        print("REFRESHA")
+        self.after(50, self.widget_custom.refresh_messages(self.tx_messages, self.rx_messages, self.ignore, self.leds))
+        self.widget_default.refresh_messages(self.tx_messages, self.rx_messages, self.ignore, self.leds)
 
+       # self.after(200, self.simulate_tab_change(classes.title_page0))
+        # self.widget_default.create_default_widgets()
 
 class LED(tk.Canvas):
     def __init__(self, master, size=10, **kwargs) -> None:
@@ -296,6 +313,6 @@ class LED(tk.Canvas):
     def toggle(self, state) -> None:
         self.state = state
         if self.state:
-            self.itemconfig(1, fill="red")  # Acceso
+            self.itemconfig(1, fill="green")  # Acceso
         else:
             self.itemconfig(1, fill="gray")  # Spento

@@ -22,7 +22,13 @@ class ParameterWidget:
     format: ttk.Entry
     is_extended_id: ttk.Entry
     scale: ttk.Entry
+    period: ttk.Entry
 
+@dataclass
+class LedsWidget:
+    led: ttk.Label
+    name: ttk.Entry
+    value: ttk.Entry
 
 # COSTANTS
 title_page0 = "Control Panel"
@@ -37,8 +43,11 @@ ixxat_available = ['simplyCAN', 'compact']
 
 baudrate_list = ("10", "20", "50", "100", "125", "250", "500", "800", "1000")
 
-max_columns = 2
-
+max_columns = 5
+max_custom_gadgets = 5
+time_between_two_messages = 0.3
+interval_periodic_messages = 1
+timeout = 0 # 8
 # RX
 m0x1003 = Parameter(
     name=["Soc [%]", "output", "fault", "Min_temp [°C]", "Max_temp [°C]", "time_to_full_charge", "warnings"],

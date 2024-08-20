@@ -1,197 +1,118 @@
 {
     "tx_parameters": [
         {
-            "name": [],
-            "arbitration_id": 4098,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
+            "name": [
+                "par1",
+                "par2",
+                "par2fbk"
             ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4100,
+            "arbitration_id": 513,
             "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4102,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4104,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
+                5,
+                2,
                 1
             ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4104,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
+            "format": "<bhh",
+            "is_extended_id": 0,
+            "scale": [
                 1,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4104,
-            "data": [
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4112,
-            "data": [
                 1,
-                0,
-                1,
-                0
-            ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
-        },
-        {
-            "name": [],
-            "arbitration_id": 4114,
-            "data": [
-                0,
-                1,
-                0,
                 1
             ],
-            "format": "",
-            "is_extended_id": true,
-            "scale": []
+            "period": 2
+        },
+        {
+            "name": [
+                "bootup"
+            ],
+            "arbitration_id": 0,
+            "data": [
+                1
+            ],
+            "format": "<b",
+            "is_extended_id": 0,
+            "scale": [
+                1
+            ],
+            "period": 1
+        },
+        {
+            "name": [
+                "bbot"
+            ],
+            "arbitration_id": 1793,
+            "data": [
+                1
+            ],
+            "format": "<b",
+            "is_extended_id": 0,
+            "scale": [
+                1
+            ],
+            "period": 3
         }
     ],
     "rx_parameters": [
         {
             "name": [
-                "Soc [%]",
-                "output",
-                "fault",
-                "Min_temp [\u00b0C]",
-                "Max_temp [\u00b0C]",
-                "time_to_full_charge",
-                "warnings"
+                "par1fbk",
+                "par2fbk",
+                "par2"
             ],
-            "arbitration_id": 4099,
+            "arbitration_id": 385,
             "data": [],
-            "format": ">BBBbbhB",
-            "is_extended_id": true,
+            "format": "<hih",
+            "is_extended_id": 0,
             "scale": [
-                1.0,
-                1.0,
-                1.0,
-                1.0,
                 1.0,
                 1.0,
                 1.0
-            ]
+            ],
+            "period": 0
         },
         {
             "name": [
-                "Voltage [V]",
-                "Current [A]"
+                "bbot"
             ],
-            "arbitration_id": 4101,
+            "arbitration_id": 1793,
             "data": [],
-            "format": "<Ii",
-            "is_extended_id": true,
+            "format": "<b",
+            "is_extended_id": 0,
             "scale": [
-                0.001,
-                0.001
-            ]
-        },
-        {
-            "name": [
-                "max_voltage_cell",
-                "min_voltage_cell",
-                "sbilanciamento",
-                "cicli",
-                "SoH%"
-            ],
-            "arbitration_id": 4103,
-            "data": [],
-            "format": "<HHHBB",
-            "is_extended_id": true,
-            "scale": [
-                1.0,
-                1.0,
-                1.0,
-                1.0,
                 1.0
-            ]
+            ],
+            "period": 0
         }
     ],
     "ignore": [
-        "parameter1",
-        "parameter2",
-        "parameter3"
+        "Vo44ltage [V]",
+        "min_voltage_cell"
+    ],
+    "leds": [
+        {
+            "led": "DO0",
+            "name": "par1fbk",
+            "value": 5.0
+        },
+        {
+            "led": "DO1",
+            "name": "par2fbk",
+            "value": 1.0
+        },
+        {
+            "led": "DO2",
+            "name": "",
+            "value": 0.0
+        },
+        {
+            "led": "DO3",
+            "name": "",
+            "value": 1.0
+        },
+        {
+            "led": "DO4",
+            "name": "",
+            "value": 1.0
+        }
     ]
 }
